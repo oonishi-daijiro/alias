@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 
 	"github.com/atotto/clipboard"
 )
@@ -24,7 +24,7 @@ func getConfig() (config.Config[string], error) {
 		var i config.Config[string]
 		return i, exePathErr
 	}
-	exeDir := path.Dir(exepath)
+	exeDir := filepath.Dir(exepath)
 	return config.Init[string](exeDir + "/config-alias.json")
 }
 
