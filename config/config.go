@@ -24,10 +24,18 @@ func Init[T JsonTypes](filePath string) (Config[T], error) {
 		if initErr := initFile(filePath); initErr != nil {
 			return Config[T]{}, initErr
 		}
+		return Config[T]{}, nil
 	}
+
+	c, err := os.ReadFile(filePath)
+	if err != nil {
+		return Config[T]{}, err
+	}
+
 	config := Config[T]{}
 	config.path = filePath
 	config.rawJson = make(map[string]T)
+	json.Unmarshal(c, &config.rawJson)
 	return config, nil
 }
 

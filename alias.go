@@ -28,11 +28,7 @@ func getConfig() (config.Config[string], error) {
 	return config.Init[string](exeDir + "/config-alias.json")
 }
 
-func getAliasValue(aliasName string) (string, error) {
-	c, configErr := getConfig()
-	if configErr != nil {
-		return "", configErr
-	}
+func getAliasValue(c *config.Config[string], aliasName string) (string, error) {
 	value, getErr := c.Get(aliasName)
 	if getErr != nil {
 		return "", getErr
@@ -43,11 +39,7 @@ func getAliasValue(aliasName string) (string, error) {
 	return value, nil
 }
 
-func setAliasValue(aliasName string, value string) error {
-	c, configErr := getConfig()
-	if configErr != nil {
-		return configErr
-	}
+func setAliasValue(c *config.Config[string], aliasName string, value string) error {
 	return c.Set(aliasName, value)
 }
 
@@ -59,8 +51,8 @@ func removeAlias(aliasName string) error {
 	return c.Delete(aliasName)
 }
 
-func copyAliasValueToClipboard(aliasName string) error {
-	value, aliasError := getAliasValue(aliasName)
+func copyAliasValueToClipboard(c *config.Config[string], aliasName string) error {
+	value, aliasError := getAliasValue(c, aliasName)
 	if aliasError != nil {
 		return aliasError
 	}
@@ -72,11 +64,7 @@ func copyAliasValueToClipboard(aliasName string) error {
 	return nil
 }
 
-func listAllAliases() error {
-	c, err := getConfig()
-	if err != nil {
-		return err
-	}
+func listAllAliases(c *config.Config[string]) error {
 	keys, getKeyErr := c.GetKeyList()
 	if getKeyErr != nil {
 		return getKeyErr
@@ -89,6 +77,10 @@ func listAllAliases() error {
 }
 
 func operateByCmdArg() error {
+	c, configErr := getConfig()
+	if configErr != nil {
+		return configErr
+	}
 	if len(os.Args) == 1 {
 		return errors.New("Please set argument")
 	}
@@ -98,7 +90,7 @@ func operateByCmdArg() error {
 			if os.Args[2] == "add" || os.Args[2] == "remove" || os.Args[2] == "list" {
 				return errors.New("Cannot use this alias name")
 			}
-			return setAliasValue(os.Args[2], os.Args[3])
+			return setAliasValue(&c, os.Args[2], os.Args[3])
 		}
 	case "remove":
 		if len(os.Args) > 2 {
@@ -106,11 +98,11 @@ func operateByCmdArg() error {
 		}
 	case "list":
 		if len(os.Args) > 1 {
-			return listAllAliases()
+			return listAllAliases(&c)
 		}
 	default:
 		if len(os.Args) > 1 {
-			return copyAliasValueToClipboard(os.Args[1])
+			return copyAliasValueToClipboard(&c, os.Args[1])
 		}
 	}
 	return nil
