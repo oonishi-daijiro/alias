@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/atotto/clipboard"
 )
@@ -69,9 +70,20 @@ func listAllAliases(c *config.Config[string]) error {
 	if getKeyErr != nil {
 		return getKeyErr
 	}
+
+	maxKeyLength := 0
+
 	for _, key := range keys {
-		v, _ := c.Get(key)
-		fmt.Println(key, ":", v)
+		if len(key) > maxKeyLength {
+			maxKeyLength = len(key)
+		}
+	}
+
+	for _, key := range keys {
+		margin := strings.Repeat(" ", maxKeyLength-len(key))
+		if v, err := c.Get(key); err == nil {
+			fmt.Println(margin, key, ":", v)
+		}
 	}
 	return nil
 }
